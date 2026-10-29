@@ -1,3 +1,4 @@
+using BrazilianCitiesObservatory.Api.Services;
 
 namespace BrazilianCitiesObservatory.Api
 {
@@ -8,9 +9,15 @@ namespace BrazilianCitiesObservatory.Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            builder.Services.AddHttpClient<IbgeService>(client =>
+            {
+                client.BaseAddress = new Uri(
+                    "https://servicodados.ibge.gov.br/api/v1/localidades/");
+            });
+
+            // Swagger / OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -26,7 +33,6 @@ namespace BrazilianCitiesObservatory.Api
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
