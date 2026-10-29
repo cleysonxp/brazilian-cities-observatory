@@ -16,12 +16,12 @@ public class MunicipalitiesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Municipality>>> Get(
+    public async Task<ActionResult<IbgeImportResult>> Get(
         CancellationToken cancellationToken)
     {
-        var municipalities = await _ibgeService.GetMunicipalitiesAsync(
+        var result = await _ibgeService.GetImportDataAsync(
             cancellationToken);
 
-        return Ok(municipalities);
+        return Ok(result);
     }
 }

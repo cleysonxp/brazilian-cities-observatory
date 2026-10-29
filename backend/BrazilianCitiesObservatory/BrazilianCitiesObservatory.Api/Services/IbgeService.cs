@@ -12,7 +12,7 @@ public class IbgeService
         _httpClient = httpClient;
     }
 
-    public async Task<List<Municipality>> GetMunicipalitiesAsync(
+    public async Task<IbgeImportResult> GetImportDataAsync(
         CancellationToken cancellationToken = default)
     {
         var ibgeMunicipalities =
@@ -26,13 +26,46 @@ public class IbgeService
                 "A API do IBGE não retornou uma lista de municípios.");
         }
 
-        return ibgeMunicipalities
-            .Select(municipality => new Municipality
+        var statesById = new Dictionary<int, State>();
+        var municipalities = new List<Municipality>();
+
+        foreach (var ibgeMunicipality in ibgeMunicipalities)
+        {
+            var ibgeState = ibgeMunicipality
+                .Microrregiao?
+                .Mesorregiao?
+                .UF;
+
+            if (ibgeState is null)
             {
-                Id = municipality.Id,
-                Name = municipality.Nome
-            })
-            .ToList();
+                continue;
+            }
+
+            if (!statesById.ContainsKey(ibgeState.Id))
+            {
+                statesById.Add(
+                    ibgeState.Id,
+                    new State
+                    {
+                        Id = ibgeState.Id,
+                        Name = ibgeState.Nome,
+                        Acronym = ibgeState.Sigla
+                    });
+            }
+
+            municipalities.Add(new Municipality
+            {
+                Id = ibgeMunicipality.Id,
+                Name = ibgeMunicipality.Nome,
+                StateId = ibgeState.Id
+            });
+        }
+
+        return new IbgeImportResult
+        {
+            States = statesById.Values.ToList(),
+            Municipalities = municipalities
+        };
     }
 
     private class IbgeMunicipalityDto
@@ -40,5 +73,26 @@ public class IbgeService
         public int Id { get; set; }
 
         public string Nome { get; set; } = string.Empty;
+
+        public IbgeMicroregionDto? Microrregiao { get; set; }
+    }
+
+    private class IbgeMicroregionDto
+    {
+        public IbgeMesoregionDto? Mesorregiao { get; set; }
+    }
+
+    private class IbgeMesoregionDto
+    {
+        public IbgeStateDto? UF { get; set; }
+    }
+
+    private class IbgeStateDto
+    {
+        public int Id { get; set; }
+
+        public string Nome { get; set; } = string.Empty;
+
+        public string Sigla { get; set; } = string.Empty;
     }
 }
