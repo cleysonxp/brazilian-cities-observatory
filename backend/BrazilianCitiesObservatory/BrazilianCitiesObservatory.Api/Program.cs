@@ -1,4 +1,6 @@
+using BrazilianCitiesObservatory.Api.Data;
 using BrazilianCitiesObservatory.Api.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace BrazilianCitiesObservatory.Api
 {
@@ -16,6 +18,11 @@ namespace BrazilianCitiesObservatory.Api
                 client.BaseAddress = new Uri(
                     "https://servicodados.ibge.gov.br/api/v1/localidades/");
             });
+
+            // Database
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(
+                    builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Swagger / OpenAPI
             builder.Services.AddEndpointsApiExplorer();
