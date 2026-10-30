@@ -1,4 +1,6 @@
-﻿namespace BrazilianCitiesObservatory.Api.Models;
+﻿using BrazilianCitiesObservatory.Api.Models;
+
+namespace BrazilianCitiesObservatory.Api.Models.Dtos;
 
 public class IbgeImportResult
 {

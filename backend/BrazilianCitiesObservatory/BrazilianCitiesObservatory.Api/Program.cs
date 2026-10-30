@@ -19,6 +19,8 @@ namespace BrazilianCitiesObservatory.Api
                     "https://servicodados.ibge.gov.br/api/v1/localidades/");
             });
 
+            builder.Services.AddScoped<IbgeImportService>();
+
             // Database
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(

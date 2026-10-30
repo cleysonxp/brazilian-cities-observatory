@@ -1,5 +1,7 @@
-﻿using System.Net.Http.Json;
+﻿
+using System.Net.Http.Json;
 using BrazilianCitiesObservatory.Api.Models;
+using BrazilianCitiesObservatory.Api.Models.Dtos;
 
 namespace BrazilianCitiesObservatory.Api.Services;
 
@@ -66,33 +68,5 @@ public class IbgeService
             States = statesById.Values.ToList(),
             Municipalities = municipalities
         };
-    }
-
-    private class IbgeMunicipalityDto
-    {
-        public int Id { get; set; }
-
-        public string Nome { get; set; } = string.Empty;
-
-        public IbgeMicroregionDto? Microrregiao { get; set; }
-    }
-
-    private class IbgeMicroregionDto
-    {
-        public IbgeMesoregionDto? Mesorregiao { get; set; }
-    }
-
-    private class IbgeMesoregionDto
-    {
-        public IbgeStateDto? UF { get; set; }
-    }
-
-    private class IbgeStateDto
-    {
-        public int Id { get; set; }
-
-        public string Nome { get; set; } = string.Empty;
-
-        public string Sigla { get; set; } = string.Empty;
     }
 }
