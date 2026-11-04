@@ -1,6 +1,9 @@
-﻿using BrazilianCitiesObservatory.Api.Models.Dtos;
+﻿using BrazilianCitiesObservatory.Api.Data;
+using BrazilianCitiesObservatory.Api.Models;
+using BrazilianCitiesObservatory.Api.Models.Dtos;
 using BrazilianCitiesObservatory.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BrazilianCitiesObservatory.Api.Controllers;
 
@@ -8,25 +11,37 @@ namespace BrazilianCitiesObservatory.Api.Controllers;
 [Route("api/[controller]")]
 public class MunicipalitiesController : ControllerBase
 {
-    private readonly IbgeService _ibgeService;
+    private readonly ApplicationDbContext _context;
     private readonly IbgeImportService _ibgeImportService;
 
     public MunicipalitiesController(
-        IbgeService ibgeService,
+        ApplicationDbContext context,
         IbgeImportService ibgeImportService)
     {
-        _ibgeService = ibgeService;
+        _context = context;
         _ibgeImportService = ibgeImportService;
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get(
+    public async Task<ActionResult<List<Municipality>>> Get(
+        [FromQuery] int? stateId,
         CancellationToken cancellationToken)
     {
-        var result = await _ibgeService.GetImportDataAsync(
-            cancellationToken);
+        var query = _context.Municipalities
+            .AsNoTracking()
+            .AsQueryable();
 
-        return Ok(result);
+        if (stateId.HasValue)
+        {
+            query = query.Where(
+                municipality => municipality.StateId == stateId.Value);
+        }
+
+        var municipalities = await query
+            .OrderBy(municipality => municipality.Name)
+            .ToListAsync(cancellationToken);
+
+        return Ok(municipalities);
     }
 
     [HttpPost("import")]
