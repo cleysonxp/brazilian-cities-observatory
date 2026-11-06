@@ -23,9 +23,11 @@ public class MunicipalitiesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Municipality>>> Get(
+    public async Task<ActionResult<PagedResultDto<Municipality>>> Get(
         [FromQuery] int? stateId,
-        CancellationToken cancellationToken)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
     {
         var query = _context.Municipalities
             .AsNoTracking()
@@ -37,11 +39,24 @@ public class MunicipalitiesController : ControllerBase
                 municipality => municipality.StateId == stateId.Value);
         }
 
+        var totalCount = await query.CountAsync(cancellationToken);
+
         var municipalities = await query
             .OrderBy(municipality => municipality.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return Ok(municipalities);
+        var result = new PagedResultDto<Municipality>
+        {
+            Items = municipalities,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+
+        return Ok(result);
     }
 
     [HttpPost("import")]
