@@ -7,4 +7,6 @@ public class State
     public string Name { get; set; } = string.Empty;
 
     public string Acronym { get; set; } = string.Empty;
+
+    public ICollection<Municipality> Municipalities { get; set; } = [];
 }

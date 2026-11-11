@@ -23,12 +23,22 @@ public class MunicipalitiesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<PagedResultDto<Municipality>>> Get(
+    public async Task<ActionResult<PagedResultDto<MunicipalityResponseDto>>> Get(
         [FromQuery] int? stateId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         CancellationToken cancellationToken = default)
     {
+        if (page < 1)
+        {
+            return BadRequest("O número da página deve ser maior ou igual a 1.");
+        }
+
+        if (pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest("O tamanho da página deve estar entre 1 e 100.");
+        }
+
         var query = _context.Municipalities
             .AsNoTracking()
             .AsQueryable();
@@ -43,11 +53,23 @@ public class MunicipalitiesController : ControllerBase
 
         var municipalities = await query
             .OrderBy(municipality => municipality.Name)
+            .ThenBy(municipality => municipality.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(municipality => new MunicipalityResponseDto
+            {
+                Id = municipality.Id,
+                Name = municipality.Name,
+                State = new StateResponseDto
+                {
+                    Id = municipality.State.Id,
+                    Name = municipality.State.Name,
+                    Acronym = municipality.State.Acronym
+                }
+            })
             .ToListAsync(cancellationToken);
 
-        var result = new PagedResultDto<Municipality>
+        var result = new PagedResultDto<MunicipalityResponseDto>
         {
             Items = municipalities,
             Page = page,
